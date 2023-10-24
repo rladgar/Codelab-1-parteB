@@ -1,0 +1,168 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>Guía para bastionar la BIOS/UEFI</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/claat-public/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid=""
+                  id="rladgar"
+                  title="Guía para bastionar la BIOS/UEFI"
+                  environment="web"
+                  feedback-link="https://github.com/rladgar/rladgar.github.io/issues/">
+    
+      <google-codelab-step label="Introducción" duration="5">
+        <p>El arranque de un sistema es un proceso crítico que puede ser vulnerable a ataques. Los atacantes pueden aprovechar vulnerabilidades en el arranque para tomar control del sistema y acceder a nuestros datos. En esta guía bastionaremos el arranque del sistema (Grub) para que esto no pueda suceder tan fácilmente. Para ello, implementaremos una serie de medidas de seguridad que nos ayudarán a protegerlo y así evitar el acceso no autorizado a nuestros datos. En mi caso realizaré el bastionado utilizando el sistema operativo Ubuntu 22.04.3 LTS.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Establecer una contraseña segura" duration="5">
+        <p>Establecer una contraseña segura nos ayudará a evitar que usuarios no autorizados accedan al sistema y a la configuración del grub.</p>
+<p>Para ello seguiremos los siguientes pasos:</p>
+<ol type="1">
+<li>Creamos una contraseña cifrada (SHA512). Para generar la contraseña utilizamos el comando <strong>&#34;sudo grub-mkpasswd-pbkdf2&#34;</strong> e introducimos 2 veces la contraseña que queramos cifrar. Una vez generada, la copiamos para el segundo paso.</li>
+</ol>
+<p class="image-container"><img alt="Alt text" src="img\\2f241aed7cfee183.png"></p>
+<ol type="1" start="2">
+<li>Modificamos el fichero &#34;/etc/grub.d/40_custom&#34; para añadir la contraseña generada. En la primera línea que añadimos al usuario &#34;root&#34; como administrador del grub. En la segunda línea añadimos &#34;password_pbkdf2&#34; para indicarle que se trata de una contraseña cifrada con pbkdf2 (SHA512), al lado le indicamos el usuario, en este caso &#34;root&#34; y copiamos la contraseña generada anteriormente:</li>
+</ol>
+<p class="image-container"><img alt="Alt text" src="img\\796b1c0f7f36d031.png"></p>
+<p>Para guardar la configuración lo hacemos con &#34;CTR + O&#34; y salimos con &#34;CTR + X&#34;.</p>
+<ol type="1" start="3">
+<li>Actualizamos el fichero para guardar los cambios con el comando &#34;sudo update-grub&#34;:</li>
+</ol>
+<p class="image-container"><img alt="Alt text" src="img\\ac08d381cd71c7c.png"></p>
+<p>! En el caso de utilizar UEFI tendriamos que utilizar el siguiente comando para actualizar el grub:</p>
+<pre><code language="language-bash" class="language-bash">sudo grub2-mkconfig -o /boot/efi/EFI/grub.cfg
+</code></pre>
+<p>y en ordenadores un poco más antiguos este otro comando:</p>
+<pre><code language="language-bash" class="language-bash">sudo grub2-mkconfig -o /boot/grub2/grub.cfg
+</code></pre>
+<ol type="1" start="4">
+<li>Reiniciamos para comprobar que funciona la configuración previamente realizada y como vemos ya nos pide que introduzcamos el usuario y la contraseña para poder acceder al grub y al sistema:</li>
+</ol>
+<p class="image-container"><img alt="Alt text" src="img\\4e804c848fc82369.png"></p>
+<ol type="1" start="5">
+<li>Por último, cambiamos los permisos del fichero &#34;/etc/grub.d/40_custom&#34; para que solo el administrador (root) pueda modificarlo:</li>
+</ol>
+<p class="image-container"><img alt="Alt text" src="img\\7748f4767ae04caa.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Ocultar el GRUB en el arraque del sistema" duration="5">
+        <p>Ocultar el grub durante el arranque del sistema nos ayudará a aumentar la seguridad ya que dificultaremos el acceso a la configuración del grub.</p>
+<p>Para ello seguiremos los siguientes pasos:</p>
+<ol type="1">
+<li>Editamos el fichero &#34;/etc/default/grub&#34; con el comando &#34;sudo nano /etc/default/grub&#34; y modificamos el valor de la variable &#34;GRUB_TIMEOUT&#34; a 0:</li>
+</ol>
+<p class="image-container"><img alt="Alt text" src="img\\e794b4e027a4cff2.png"></p>
+<p>Para guardar la configuración lo hacemos con &#34;CTR + O&#34; y salimos con &#34;CTR + X&#34;.</p>
+<ol type="1" start="2">
+<li>Actualizamos el grub con el comando &#34;sudo update-grub&#34;:</li>
+</ol>
+<p class="image-container"><img alt="Alt text" src="img\\1b6b3121d1ac038d.png"></p>
+<ol type="1" start="3">
+<li>Cuando reiniciemos, nos saltará instantáneamente la pantalla para ingresar el usuario y la contraseña sin la posibilidad de pulsar ninguna tecla para acceder al grub o al sistema:</li>
+</ol>
+<p class="image-container"><img alt="Alt text" src="img\\cceaa120a2567ce6.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Copias de seguridad" duration="10">
+        <p>Realizar copias de seguridad de la configuración del grub es muy importante ya que si nos falla el sistema o si alguien lo modifica podremos restaurar dichas copias y volver al estado actual.</p>
+<p>Para hacer las copias de seguridad existen 2 métodos:</p>
+<h2 is-upgraded>1. Copia de seguridad con &#34;dd&#34;</h2>
+<p>Esto se consigue copiando los sectores del MBR (Registro principal de arranque) en un fichero &#34;.txt&#34;.</p>
+<p>Para ello seguiremos los siguientes pasos:</p>
+<ol type="1">
+<li>Saber cuál es nuestro disco duro principal, que es donde se encuentra el grub instalado. Lo podemos ver usando el comando &#34;lsblk&#34;:</li>
+</ol>
+<p class="image-container"><img alt="Alt text" src="img\\fef6d98a976fab34.png"></p>
+<p>Como podemos ver en la captura nuestro disco principal es &#34;sda&#34;.</p>
+<ol type="1" start="2">
+<li>Hacer la copia de seguridad. Esto lo hacemos con el comando &#34;sudo dd if=/dev/sda of=/home/nombre-usuario/master-boot-record.txt count=1 bs=512&#34;:</li>
+</ol>
+<p class="image-container"><img alt="Alt text" src="img\\628f529380f23af8.png"></p>
+<ul>
+<li>if -&gt; Especifica la ruta que queremos copiar.</li>
+<li>of -&gt; Especifica la ruta donde queremos guardar la copia de seguridad.</li>
+<li>count=1 -&gt; Establece el número de bloques a copiar.</li>
+<li>bs=512 -&gt; Indica el tamaño del bloque.</li>
+</ul>
+<p>En este caso como el grub se almacena en el primer sector nos bastará con copiar un bloque de 512 bytes que es lo que ocupa el MBR normalmente.</p>
+<p>! Es muy importante guardar esta copia de seguridad fuera de nuestro equipo.</p>
+<ol type="1" start="3">
+<li>Si queremos restaurar la copia de seguridad lo hacemos con el mismo comando, pero de manera inversa, es decir, cambiando el origen y el destino:</li>
+</ol>
+<p class="image-container"><img alt="Alt text" src="img\\e979d2f2686d39b8.png"></p>
+<h2 is-upgraded>Copia de seguridad con &#34;cp&#34;</h2>
+<p>En el caso de utilizar UEFI no podremos utilizar el comando &#34;dd&#34; para realizar la copia de seguridad. Con este método podremos copiar los ficheros de configuración y las entradas del GRUB.</p>
+<ol type="1">
+<li>Crear el directorio donde almacenaremos las copias de seguridad. Esto lo hacemos fácilmente con el comando &#34;mkdir&#34;:</li>
+</ol>
+<p class="image-container"><img alt="Alt text" src="img\\4fb2096acaaeb5ba.png"></p>
+<ol type="1" start="2">
+<li>Copiamos los ficheros de configuración a nuestro directorio recién creado con el comando &#34;cp&#34;:</li>
+</ol>
+<p class="image-container"><img alt="Alt text" src="img\\7701c88a9378b306.png"></p>
+<ol type="1" start="3">
+<li>Copiamos los ficheros de las entradas del grub de la misma manera, pero esta vez como usuario root ya que sino no nos dejara copiarlo ya que el directorio requiere de permisos:</li>
+</ol>
+<p class="image-container"><img alt="Alt text" src="img\\ce933cc7295ea490.png"></p>
+<ol type="1" start="4">
+<li>Verificamos que los ficheros se han copiado correctamente:</li>
+</ol>
+<p class="image-container"><img alt="Alt text" src="img\\bcac0f3f04df2df4.png"></p>
+<ol type="1" start="5">
+<li>Si queremos restaurar las copias de seguridad solo tendremos que mover estos ficheros de donde mismo los hemos sacado. Esto se puede hacer fácilmente con el comando &#34;mv&#34;:</li>
+</ol>
+<p class="image-container"><img alt="Alt text" src="img\\7669fb2c5c9fd08a.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Proteger la entrada a otros sistemas operativos" duration="5">
+        <p>Proteger las entradas a otros sistemas operativos que tengamos instalados junto a nuestro Debian ayudará a aumentar la seguridad ya que si solo protegemos el sistema principal podrían iniciar sesión en Windows por ejemplo.</p>
+<p>La lista de sistemas operativos que se muestran en el grub se encuentra en el fichero &#34;30_os-prober&#34; por lo que si ha este fichero le agregamos los usuarios en las entradas (-users), la protección de contraseña se aplicará también a los sistemas operativos que tengamos instalados.</p>
+<p>Para automatizar esto y no tener que modificar cada una de las entradas usamos el siguiente comando:</p>
+<pre><code language="language-bash" class="language-bash">sudo sed &#39;s/–class os /–class os --users /&#39; -i /etc/grub.d/30_os-prober
+</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Conclusión" duration="5">
+        <p>Para concluir, quiero destacar la importancia de bastionar el sistema de arranque, ya que este es el primer punto de entrada a nuestro sistema operativo. Al implementar las medidas de seguridad descritas en esta guía, no solo estamos protegiendo nuestros datos y recursos críticos, sino que también estamos fortaleciendo nuestro sistema ante amenazas.</p>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/claat-public/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/prettify.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/codelab-elements.js"></script>
+  <script src="//support.google.com/inapp/api.js"></script>
+
+</body>
+</html>

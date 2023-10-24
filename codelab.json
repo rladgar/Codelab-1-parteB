@@ -1,0 +1,25 @@
+{
+  "environment": "web",
+  "format": "html",
+  "prefix": "https://storage.googleapis.com",
+  "mainga": "UA-49880327-14",
+  "updated": "2023-10-24T22:09:05+02:00",
+  "id": "rladgar",
+  "duration": 35,
+  "title": "Guía para bastionar la BIOS/UEFI",
+  "summary": "Guía para bastionar el arranque de un sistema Debian",
+  "source": ".\\Proyecto_1.2\\codelab.md",
+  "theme": "",
+  "status": [
+    "published"
+  ],
+  "category": [
+    "codelab",
+    "markdown"
+  ],
+  "tags": [
+    "web"
+  ],
+  "feedback": "https://github.com/rladgar/rladgar.github.io/issues/",
+  "url": "rladgar"
+}
